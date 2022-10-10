@@ -73,22 +73,22 @@ time=length(loc1)/10;
 %% 直接产生结构体
 % 经过一定的时延逐个发送？  产生一个发送一个？  每隔1秒中就发送五个浮标的数据
 % 一个结构体 4632 字节 超过UDP上限了没？UDP无上限  但是IP层有上限
-for fram=1:time
-    for index=1:5
-        tempvalue.buoyIndex=index;
-        tempvalue.periodNum=fram;
-        tempvalue.buoyLatHead=lat(index);
-        tempvalue.buoyLongHead=lon(index)
-        for sailnum=1:10
-            tempvalue.sailInfoSN_H(sailnum).amplitude_V=100.0;
-            tempvalue.sailInfoSN_H(sailnum).heading_deg=0.0;
-            tempvalue.sailInfoSN_H(sailnum).orientation=newtheta(index,(fram-1)*MAX_SAIL_NUM+sailnum);  
-        end
-    end
-end
+% for fram=1:time
+%     for index=1:5
+%         tempvalue.buoyIndex=index;
+%         tempvalue.periodNum=fram;
+%         tempvalue.buoyLatHead=lat(index);
+%         tempvalue.buoyLongHead=lon(index)
+%         for sailnum=1:10
+%             tempvalue.sailInfoSN_H(sailnum).amplitude_V=100.0;
+%             tempvalue.sailInfoSN_H(sailnum).heading_deg=0.0;
+%             tempvalue.sailInfoSN_H(sailnum).orientation=newtheta(index,(fram-1)*MAX_SAIL_NUM+sailnum);  
+%         end
+%     end
+% end
 
 %% 调用UDP端口发送出去
-fclose(instrfindall);%先关闭之前可能存在的UDP
+% fclose(instrfindall);%先关闭之前可能存在的UDP
 % %建立服务器端  
 u1=udp('127.0.0.1',8080);
 
@@ -125,14 +125,30 @@ for fram=1:time
 %         aa=struct2cell(tempvalue);
 %         yy=cell2mat(aa);
 %         fprintf(u1,num2str(fram));
+
+        % 先存成double数组
+        temp=[tempvalue.buoyIndex,tempvalue.periodNum,tempvalue.buoyLatHead,tempvalue.buoyLongHead,tempvalue.sailInfoSN_H(1).amplitude_V,...
+            tempvalue.sailInfoSN_H(1).heading_deg,tempvalue.sailInfoSN_H(1).orientation,...
+            tempvalue.sailInfoSN_H(2).amplitude_V,tempvalue.sailInfoSN_H(2).heading_deg,tempvalue.sailInfoSN_H(2).orientation,...
+            tempvalue.sailInfoSN_H(3).amplitude_V,tempvalue.sailInfoSN_H(3).heading_deg,tempvalue.sailInfoSN_H(3).orientation,...
+            tempvalue.sailInfoSN_H(4).amplitude_V,tempvalue.sailInfoSN_H(4).heading_deg,tempvalue.sailInfoSN_H(4).orientation,...
+            tempvalue.sailInfoSN_H(5).amplitude_V,tempvalue.sailInfoSN_H(5).heading_deg,tempvalue.sailInfoSN_H(5).orientation,...
+            tempvalue.sailInfoSN_H(6).amplitude_V,tempvalue.sailInfoSN_H(6).heading_deg,tempvalue.sailInfoSN_H(6).orientation,...
+            tempvalue.sailInfoSN_H(7).amplitude_V,tempvalue.sailInfoSN_H(7).heading_deg,tempvalue.sailInfoSN_H(7).orientation,...
+            tempvalue.sailInfoSN_H(8).amplitude_V,tempvalue.sailInfoSN_H(8).heading_deg,tempvalue.sailInfoSN_H(8).orientation,...
+            tempvalue.sailInfoSN_H(9).amplitude_V,tempvalue.sailInfoSN_H(9).heading_deg,tempvalue.sailInfoSN_H(9).orientation,...
+            tempvalue.sailInfoSN_H(10).amplitude_V,tempvalue.sailInfoSN_H(10).heading_deg,tempvalue.sailInfoSN_H(10).orientation];
+        %转成字符数组  num2str
+        fwrite(u1,temp,'double');
+        %%%fprint对应fscanf，用于发送和接收字符型的
+        %%fwrite对应fread，用于发送和接收数值型的，下一篇我会用TCP进行十六进制数据的通信来讲解（很多设备的协议有时候是用十六进制打印出来的）
+%         aaa=num2str(temp);
+%         fwrite(u1,aaa,'double');
     end
 end
 % fprintf(u1,'netassistant receive from u1');%u1发送消息给u3
 
 %--------------------u1接收消息-------------------------
-fscanf(u1)
-fscanf(u1)
-
 fclose(u1);%关闭udp1连接
 delete(u1);%删除udp1连接，释放内存
 clear u1;%清除工作区中的udp1数据
@@ -145,5 +161,6 @@ clear u1;%清除工作区中的udp1数据
 %     fwrite(tcpipServer,str,'char');
 %     fwrite(tcpipServer,i,'double');
 % end
+
 
 
